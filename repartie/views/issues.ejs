@@ -1,0 +1,21 @@
+<%- include('partials/head', { pageTitle: settings.issues_heading }) %>
+
+<div class="column">
+  <h1><%= settings.issues_heading %></h1>
+  <p class="standfirst"><%= settings.issues_intro %></p>
+</div>
+
+<% if (issues.length) { %>
+  <% issues.forEach(function (issue) { %>
+    <section class="issue-card">
+      <p class="issue-number">No. <%= issue.number %></p>
+      <% if (issue.dateline) { %><p class="issue-dateline"><%= issue.dateline %></p><% } %>
+      <h2 class="issue-title"><a href="/issues/<%= issue.slug %>" style="color:inherit;text-decoration:none"><%= issue.title %></a></h2>
+      <%- include('partials/toc', { issue: issue, pieces: issue.pieces }) %>
+    </section>
+  <% }); %>
+<% } else { %>
+  <p class="empty">Nothing published yet.</p>
+<% } %>
+
+<%- include('partials/foot') %>

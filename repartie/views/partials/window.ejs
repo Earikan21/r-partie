@@ -1,0 +1,8 @@
+<div class="window <%= window.isOpen ? '' : 'window-shut' %>">
+  <p class="window-state">
+    <% if (window.state === 'open') { %>Now reading
+    <% } else if (window.state === 'upcoming') { %>Not yet open
+    <% } else { %>Closed<% } %>
+  </p>
+  <p class="window-sentence"><%= window.sentence %></p>
+</div>

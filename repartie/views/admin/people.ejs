@@ -1,0 +1,114 @@
+<%- include('../partials/head', { pageTitle: 'Owners' }) %>
+
+<%- include('../partials/desk') %>
+
+<h1>Owners</h1>
+<p class="type muted" style="margin-bottom:2rem">
+  Everyone here can read submissions, set their status, build issues, and change the site.
+  Readers never sign in, so there is nobody else to manage.
+</p>
+
+<table class="ledger">
+  <thead><tr><th>Name</th><th>Email</th><th>Since</th><th></th></tr></thead>
+  <tbody>
+    <% owners.forEach(function (o) { %>
+      <tr>
+        <td class="ledger-name"><%= o.name %><%= o.id === owner.id ? ' (you)' : '' %></td>
+        <td><%= o.email %></td>
+        <td><%= o.created_at.slice(0, 10) %></td>
+        <td>
+          <% if (o.id !== owner.id && owners.length > 1) { %>
+            <form method="post" action="/admin/people/<%= o.id %>/delete"
+                  onsubmit="return confirm('Remove <%= o.name %>? They lose access immediately.')">
+              <button class="btn btn-quiet btn-small" type="submit">Remove</button>
+            </form>
+          <% } else { %>
+            <span class="muted">—</span>
+          <% } %>
+        </td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<section class="panel" style="margin-top:2.5rem">
+  <p class="panel-head">Invite an owner</p>
+  <p class="panel-note">
+    Nothing is emailed — the site sends no mail. You get a link, you send it to them yourself,
+    and they set their own password. You never see it. The link works once and dies after
+    <%= inviteDays %> days.
+  </p>
+
+  <% if (error) { %><p class="notice notice-alarm"><%= error %></p><% } %>
+
+  <form method="post" action="/admin/people/invite">
+    <div class="field">
+      <label for="email">Their email</label>
+      <input type="email" id="email" name="email" required>
+      <span class="hint">They sign in with this address once they accept.</span>
+    </div>
+    <button class="btn" type="submit">Make an invitation</button>
+  </form>
+</section>
+
+<% if (invites.length) { %>
+  <section class="panel">
+    <p class="panel-head">Invitations out (<%= invites.length %>)</p>
+
+    <% invites.forEach(function (i) { %>
+      <div id="invite-<%= i.id %>" style="border-bottom:1px solid var(--rule); padding:1rem 0">
+        <div class="row" style="justify-content:space-between">
+          <span class="ledger-name"><%= i.email %></span>
+          <span>
+            <% if (i.is_expired) { %>
+              <span class="stamp stamp-rescinded">expired</span>
+            <% } else { %>
+              <span class="stamp stamp-approved">waiting</span>
+            <% } %>
+          </span>
+        </div>
+
+        <% if (!i.is_expired) { %>
+          <div class="row" style="margin-top:.6rem; flex-wrap:nowrap">
+            <input type="text" readonly value="<%= inviteUrl(i.token) %>"
+                   style="flex:1; min-width:0"
+                   aria-label="Invitation link for <%= i.email %>"
+                   onfocus="this.select()">
+            <button type="button" class="btn btn-quiet btn-small"
+                    data-copy="<%= inviteUrl(i.token) %>">Copy</button>
+          </div>
+        <% } %>
+
+        <div class="row" style="margin-top:.6rem">
+          <span class="type muted">
+            <% if (i.is_expired) { %>
+              Ran out <%= i.expires_at.slice(0, 10) %>. Invite them again to make a fresh link.
+            <% } else { %>
+              Good until <%= i.expires_at.slice(0, 10) %><%= i.invited_by_name ? ' — invited by ' + i.invited_by_name : '' %>
+            <% } %>
+          </span>
+          <form method="post" action="/admin/people/invite/<%= i.id %>/revoke" style="margin-left:auto">
+            <button class="btn btn-quiet btn-small" type="submit">
+              <%= i.is_expired ? 'Clear' : 'Tear it up' %>
+            </button>
+          </form>
+        </div>
+      </div>
+    <% }); %>
+  </section>
+
+  <script>
+    // Copy buttons. If this does not run, the link is still there to select by hand.
+    document.querySelectorAll('[data-copy]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        navigator.clipboard.writeText(button.dataset.copy).then(function () {
+          var was = button.textContent;
+          button.textContent = 'Copied';
+          setTimeout(function () { button.textContent = was; }, 1500);
+        });
+      });
+    });
+  </script>
+<% } %>
+
+<%- include('../partials/foot') %>

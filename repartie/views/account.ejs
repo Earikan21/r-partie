@@ -1,0 +1,81 @@
+<%- include('partials/head', { pageTitle: 'Your account' }) %>
+
+<% if (!owner.must_change_password) { %>
+  <%- include('partials/desk') %>
+<% } %>
+
+<div class="column" style="max-width:28rem">
+
+  <% if (owner.must_change_password) { %>
+    <p class="eyebrow">First things first</p>
+    <h1>Make this account yours</h1>
+    <p class="standfirst">
+      You signed in with the credentials the site ships with. Everyone who has ever seen this
+      code knows them, so they are no good to you. Replace them and the desk opens.
+    </p>
+    <p class="notice notice-alarm">
+      Until the password is changed, <strong>/admin</strong> stays shut.
+    </p>
+  <% } else { %>
+    <h1>Your account</h1>
+    <p class="standfirst">Your name, the address you sign in with, and your password.</p>
+  <% } %>
+
+  <% if (error) { %><p class="notice notice-alarm"><%= error %></p><% } %>
+
+  <section class="panel">
+    <p class="panel-head">Who you are</p>
+    <form method="post" action="/account/details">
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name"
+               value="<%= values.name !== undefined ? values.name : owner.name %>" required>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               value="<%= values.email !== undefined ? values.email : owner.email %>" required>
+        <span class="hint">This is what you sign in with. Changing it takes effect at once.</span>
+      </div>
+      <button class="btn" type="submit">Save</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <p class="panel-head">Password</p>
+    <% if (owner.must_change_password) { %>
+      <p class="panel-note">
+        The current password is the one you just used to get in.
+      </p>
+    <% } %>
+
+    <form method="post" action="/account/password">
+      <div class="field">
+        <label for="current">Current password</label>
+        <input type="password" id="current" name="current" required
+               <%= owner.must_change_password ? 'autofocus' : '' %>>
+      </div>
+      <div class="field">
+        <label for="password">New password</label>
+        <input type="password" id="password" name="password" minlength="10" required>
+        <span class="hint">At least 10 characters.</span>
+      </div>
+      <div class="field">
+        <label for="confirm">New password again</label>
+        <input type="password" id="confirm" name="confirm" minlength="10" required>
+      </div>
+      <button class="btn" type="submit">
+        <%= owner.must_change_password ? 'Change it and open the desk' : 'Change password' %>
+      </button>
+    </form>
+  </section>
+
+  <% if (!owner.must_change_password) { %>
+    <p class="type muted">
+      Forgot it instead? There is no reset — the site sends no mail. Another owner can remove
+      you at <a href="/admin/people">Owners</a> and invite you again.
+    </p>
+  <% } %>
+</div>
+
+<%- include('partials/foot') %>

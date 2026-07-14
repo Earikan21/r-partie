@@ -1,0 +1,25 @@
+<% if (pieces.length) { %>
+  <ul class="toc">
+    <% pieces.forEach(function (piece) { %>
+      <li class="toc-item">
+        <div class="toc-line">
+          <span class="toc-title">
+            <% if (piece.body) { %>
+              <a href="/issues/<%= issue.slug %>/<%= piece.slug %>"><%= piece.title %></a>
+            <% } else if (piece.url) { %>
+              <a href="<%= piece.url %>" rel="noopener noreferrer" target="_blank"><%= piece.title %></a>
+              <span class="toc-out">↗</span>
+            <% } else { %>
+              <%= piece.title %>
+            <% } %>
+          </span>
+          <span class="toc-leader"></span>
+          <span class="toc-author"><%= piece.author %></span>
+        </div>
+        <% if (piece.blurb) { %><p class="toc-blurb"><%= piece.blurb %></p><% } %>
+      </li>
+    <% }); %>
+  </ul>
+<% } else { %>
+  <p class="empty">This issue has no pieces in it yet.</p>
+<% } %>

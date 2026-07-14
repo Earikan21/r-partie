@@ -1,0 +1,45 @@
+<%- include('partials/head') %>
+
+<div class="column">
+  <h1><%= settings.home_heading %></h1>
+  <p class="standfirst"><%= settings.home_standfirst %></p>
+</div>
+
+<%- include('partials/window') %>
+
+<% if (current) { %>
+  <div class="issue-head">
+    <p class="issue-number">No. <%= current.number %></p>
+    <% if (current.dateline) { %><p class="issue-dateline"><%= current.dateline %> — the current issue</p><% } %>
+    <h2 class="issue-title"><%= current.title %></h2>
+    <% if (current.intro) { %>
+      <div class="prose column">
+        <% current.intro.split(/\n\s*\n/).forEach(function (p) { %>
+          <% if (p.trim()) { %><p><%= p.trim() %></p><% } %>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+
+  <%- include('partials/toc', { issue: current, pieces: pieces }) %>
+
+  <% if (back.length) { %>
+    <h2>Earlier</h2>
+    <ul class="toc">
+      <% back.forEach(function (issue) { %>
+        <li class="toc-item">
+          <div class="toc-line">
+            <span class="toc-title"><a href="/issues/<%= issue.slug %>">No. <%= issue.number %> — <%= issue.title %></a></span>
+            <span class="toc-leader"></span>
+            <span class="toc-author"><%= issue.dateline %></span>
+          </div>
+        </li>
+      <% }); %>
+    </ul>
+    <p style="margin-top:1.5rem"><a href="/issues">All issues, past and present →</a></p>
+  <% } %>
+<% } else { %>
+  <p class="empty">No issue has been published yet. The owner can build one at the desk.</p>
+<% } %>
+
+<%- include('partials/foot') %>

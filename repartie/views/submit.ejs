@@ -1,0 +1,59 @@
+<%- include('partials/head', { pageTitle: settings.submit_heading }) %>
+
+<div class="column">
+  <h1><%= settings.submit_heading %></h1>
+  <p class="standfirst"><%= settings.submit_intro %></p>
+</div>
+
+<%- include('partials/window') %>
+
+<div class="column">
+  <% if (sent) { %>
+
+    <p class="notice notice-alarm"><%= settings.submissions_thanks %></p>
+    <p><a href="/issues">Read an issue while you wait →</a></p>
+
+  <% } else if (!window.isOpen) { %>
+
+    <div class="prose">
+      <% settings.submit_guidelines.split(/\n\s*\n/).forEach(function (p) { %>
+        <% if (p.trim()) { %><p><%= p.trim() %></p><% } %>
+      <% }); %>
+    </div>
+
+  <% } else { %>
+
+    <div class="prose" style="margin-bottom:2.5rem">
+      <% settings.submit_guidelines.split(/\n\s*\n/).forEach(function (p) { %>
+        <% if (p.trim()) { %><p><%= p.trim() %></p><% } %>
+      <% }); %>
+    </div>
+
+    <% if (error) { %><p class="notice notice-alarm"><%= error %></p><% } %>
+
+    <form method="post" action="/submit">
+      <div class="field">
+        <label for="name">Your name</label>
+        <input type="text" id="name" name="name" value="<%= values.name || '' %>" required>
+      </div>
+
+      <div class="field">
+        <label for="email">Your email</label>
+        <input type="email" id="email" name="email" value="<%= values.email || '' %>" required>
+        <span class="hint">This is how we reach you. We do not use it for anything else.</span>
+      </div>
+
+      <div class="field">
+        <label for="essay_url">Link to the essay</label>
+        <input type="url" id="essay_url" name="essay_url" placeholder="https://"
+               value="<%= values.essay_url || '' %>" required>
+        <span class="hint">A Google Doc, a Substack post, a PDF — anything we can open without asking permission.</span>
+      </div>
+
+      <button class="btn" type="submit">Send it in</button>
+    </form>
+
+  <% } %>
+</div>
+
+<%- include('partials/foot') %>

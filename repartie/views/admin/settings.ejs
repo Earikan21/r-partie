@@ -1,0 +1,63 @@
+<%- include('../partials/head', { pageTitle: 'Site & window' }) %>
+
+<%- include('../partials/desk') %>
+
+<h1>Site &amp; window</h1>
+<p class="type muted" style="margin-bottom:2rem">
+  Every word on the public site, and the dates that open and close submissions.
+</p>
+
+<div class="window <%= window.isOpen ? '' : 'window-shut' %>" style="max-width:40rem">
+  <p class="window-state">Readers see this now</p>
+  <p class="window-sentence"><%= window.sentence %></p>
+</div>
+
+<form method="post" action="/admin/settings">
+  <% groups.forEach(function (group) { %>
+    <section class="panel">
+      <p class="panel-head"><%= group.label %></p>
+      <% if (group.note) { %><p class="panel-note"><%= group.note %></p><% } %>
+
+      <% group.keys.forEach(function (key) { %>
+        <div class="field">
+          <label for="<%= key %>"><%= key.replace(/^submissions_/, '').replace(/_/g, ' ') %></label>
+
+          <% if (key === 'submissions_mode') { %>
+            <select id="<%= key %>" name="<%= key %>">
+              <option value="scheduled" <%= settings[key] === 'scheduled' ? 'selected' : '' %>>Follow the dates below</option>
+              <option value="open" <%= settings[key] === 'open' ? 'selected' : '' %>>Always open, ignore the dates</option>
+              <option value="closed" <%= settings[key] === 'closed' ? 'selected' : '' %>>Always closed, ignore the dates</option>
+            </select>
+            <span class="hint">On "follow the dates", the form opens and closes on its own.</span>
+
+          <% } else if (dateFields.has(key)) { %>
+            <input type="date" id="<%= key %>" name="<%= key %>" value="<%= settings[key] %>">
+            <% if (key === 'submissions_reply_by') { %>
+              <span class="hint">The site tells writers they will hear back by this date.</span>
+            <% } %>
+
+          <% } else if (longFields.has(key)) { %>
+            <textarea id="<%= key %>" name="<%= key %>"
+                      style="min-height:<%= key === 'about_body' ? '11rem' : '5rem' %>"><%= settings[key] %></textarea>
+
+          <% } else { %>
+            <input type="text" id="<%= key %>" name="<%= key %>" value="<%= settings[key] %>">
+          <% } %>
+        </div>
+      <% }); %>
+    </section>
+  <% }); %>
+
+  <button class="btn" type="submit">Save everything</button>
+</form>
+
+<section class="panel" style="margin-top:3rem">
+  <p class="panel-head">Start over</p>
+  <p class="panel-note">Puts every word and date back to what it shipped with.</p>
+  <form method="post" action="/admin/settings/reset"
+        onsubmit="return confirm('Reset all site copy and dates?')">
+    <button class="btn btn-quiet btn-small" type="submit">Reset to defaults</button>
+  </form>
+</section>
+
+<%- include('../partials/foot') %>

@@ -1,0 +1,23 @@
+<%- include('partials/head', { pageTitle: 'Owner' }) %>
+
+<div class="column" style="max-width:24rem">
+  <h1>Owner</h1>
+  <p class="standfirst">Readers do not need an account. This door is for the desk.</p>
+
+  <% if (error) { %><p class="notice notice-alarm"><%= error %></p><% } %>
+
+  <form method="post" action="/login">
+    <input type="hidden" name="next" value="<%= next %>">
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" value="<%= values.email || '' %>" required autofocus>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+    <button class="btn" type="submit">Sign in</button>
+  </form>
+</div>
+
+<%- include('partials/foot') %>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= typeof pageTitle !== 'undefined' && pageTitle ? pageTitle + ' — ' + settings.site_title : settings.site_title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700;6..96,900&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header>
+    <div class="masthead-inner">
+      <a class="wordmark" href="/">
+        <span class="wordmark-name"><%= settings.site_title %></span>
+        <span class="wordmark-tagline"><%= settings.site_tagline %></span>
+      </a>
+    </div>
+
+    <div class="rules">
+      <div class="rules-black"></div>
+      <div class="rules-blue"></div>
+    </div>
+
+    <div class="bar">
+      <nav class="nav" aria-label="Main">
+        <a href="/issues" <%= path.startsWith('/issues') ? 'aria-current="page"' : '' %>><%= settings.nav_issues %></a>
+        <a href="/about" <%= path === '/about' ? 'aria-current="page"' : '' %>><%= settings.nav_about %></a>
+        <a href="/submit" <%= path === '/submit' ? 'aria-current="page"' : '' %>><%= settings.nav_submit %></a>
+      </nav>
+    </div>
+  </header>
+
+  <% if (flash) { %>
+    <p class="flash flash-<%= flash.type %>" role="status"><%= flash.message %></p>
+  <% } %>
+
+  <main id="main">

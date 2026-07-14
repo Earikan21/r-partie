@@ -1,0 +1,26 @@
+# Render Blueprint. Push this with the repo, then New > Blueprint in Render.
+services:
+  - type: web
+    name: repartie
+    runtime: node
+    plan: starter          # Persistent disks need a paid instance. See README.
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /var/data
+      - key: SESSION_SECRET
+        generateValue: true   # Render makes a random one for you
+      - key: OWNER_EMAIL
+        sync: false           # Set in the dashboard
+      - key: OWNER_PASSWORD
+        sync: false           # Set in the dashboard, then change it after first login
+      - key: SITE_TZ
+        value: America/Los_Angeles   # The window opens and closes on this clock
+    disk:
+      name: repartie-data
+      mountPath: /var/data
+      sizeGB: 1

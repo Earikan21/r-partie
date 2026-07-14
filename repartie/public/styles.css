@@ -1,0 +1,405 @@
+/* Repartie
+   ─────────────────────────────────────────────────────────────────────────
+   After the jacket of Joan Didion's "The White Album" (Simon & Schuster,
+   1979; jacket design by Robert Anthony), which was set in Pistilli Roman —
+   a fat, hairline-thin Didone from 1964. The book's interior was Palatino.
+
+   So: Bodoni Moda at its heaviest, tracked tight, standing in for Pistilli.
+   Spectral for reading, with Palatino itself as the first system fallback.
+   Courier Prime for the owner's desk, because submissions arrive as
+   manuscripts and manuscripts are typed.
+
+   Black, white, and one blue. Nothing else. */
+
+:root {
+  --ink: #0b0b0d;
+  --ink-soft: #5c5c62;
+  --paper: #ffffff;
+  --paper-2: #f2f2ef;
+  --blue: #1a34c8;
+  --rule: rgba(11, 11, 13, 0.2);
+  --rule-strong: rgba(11, 11, 13, 0.55);
+
+  --display: "Bodoni Moda", "Bodoni 72", Didot, serif;
+  --body: "Spectral", Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --type: "Courier Prime", "Courier New", Courier, monospace;
+
+  --measure: 36rem;
+  --frame: 60rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 1.0625rem;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--blue); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { color: var(--ink); }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.skip { position: absolute; left: -9999px; }
+.skip:focus {
+  left: 1rem; top: 1rem; z-index: 10;
+  background: var(--ink); color: var(--paper); padding: .5rem .75rem;
+}
+
+/* ── Masthead ─────────────────────────────────────────────────────────── */
+
+.masthead-inner { max-width: var(--frame); margin: 0 auto; padding: 2.25rem 1.5rem 0; }
+.wordmark { display: block; text-decoration: none; color: var(--ink); text-align: center; }
+.wordmark-name {
+  display: block;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: clamp(2.6rem, 9vw, 5.25rem);
+  line-height: .92;
+  letter-spacing: -0.02em;
+  font-variation-settings: "opsz" 96;
+  text-transform: uppercase;
+}
+.wordmark:hover .wordmark-name { color: var(--blue); }
+.wordmark-tagline {
+  display: block;
+  font-variant: small-caps;
+  letter-spacing: .18em;
+  font-size: .8rem;
+  color: var(--ink-soft);
+  margin-top: .85rem;
+}
+
+/* The double rule: heavy black, hairline blue. A 1970s jacket device. */
+.rules { max-width: var(--frame); margin: 1.25rem auto 0; padding: 0 1.5rem; }
+.rules-black { height: 5px; background: var(--ink); }
+.rules-blue { height: 1px; background: var(--blue); margin-top: 3px; }
+
+.bar {
+  max-width: var(--frame);
+  margin: 0 auto;
+  padding: .7rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  border-bottom: 1px solid var(--ink);
+}
+.nav { display: flex; gap: 2.25rem; align-items: baseline; flex-wrap: wrap; justify-content: center; }
+.nav a {
+  font-family: var(--body);
+  font-variant: small-caps;
+  letter-spacing: .12em;
+  font-size: .85rem;
+  color: var(--ink);
+  text-decoration: none;
+  padding-bottom: 1px;
+  border-bottom: 2px solid transparent;
+}
+.nav a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+.nav a[aria-current="page"] { border-bottom-color: var(--ink); }
+
+/* ── Frame ────────────────────────────────────────────────────────────── */
+
+#main { max-width: var(--frame); margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+.column { max-width: var(--measure); }
+
+h1, h2, h3 {
+  font-family: var(--display);
+  font-weight: 900;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  font-variation-settings: "opsz" 72;
+}
+h1 { font-size: clamp(2rem, 5vw, 3rem); margin: 0 0 1rem; }
+h2 { font-size: 1.5rem; margin: 2.75rem 0 1rem; }
+h3 { font-size: 1.15rem; margin: 0 0 .4rem; }
+
+.standfirst {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--ink-soft);
+  margin: 0 0 2.25rem;
+}
+.prose p { margin: 0 0 1.15rem; }
+
+.eyebrow {
+  font-variant: small-caps;
+  letter-spacing: .16em;
+  font-size: .8rem;
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+}
+
+/* ── Issues, and the table of contents ────────────────────────────────── */
+
+.issue-head { border-top: 5px solid var(--ink); padding-top: 1.25rem; margin-bottom: 2rem; }
+.issue-number {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 3.5rem;
+  line-height: 1;
+  color: var(--blue);
+  font-variation-settings: "opsz" 96;
+  margin: 0 0 .25rem;
+}
+.issue-dateline {
+  font-variant: small-caps;
+  letter-spacing: .16em;
+  font-size: .8rem;
+  color: var(--ink-soft);
+  margin: 0 0 .75rem;
+}
+.issue-title { font-size: clamp(1.75rem, 4vw, 2.5rem); margin: 0 0 .75rem; }
+
+/* Leader dots, like a real contents page. */
+.toc { list-style: none; margin: 0; padding: 0; }
+.toc-item { padding: .85rem 0; border-bottom: 1px solid var(--rule); }
+.toc-line { display: flex; align-items: baseline; gap: .6rem; }
+.toc-title {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 1.2rem;
+  letter-spacing: -0.01em;
+  font-variation-settings: "opsz" 24;
+}
+.toc-title a { color: var(--ink); text-decoration: none; }
+.toc-title a:hover { color: var(--blue); }
+.toc-leader {
+  flex: 1;
+  border-bottom: 1px dotted var(--rule-strong);
+  transform: translateY(-.3em);
+  min-width: 1.5rem;
+}
+.toc-author { font-style: italic; color: var(--ink-soft); white-space: nowrap; }
+.toc-blurb { margin: .35rem 0 0; color: var(--ink-soft); font-size: .95rem; }
+.toc-out { font-family: var(--type); font-size: .7rem; color: var(--blue); }
+
+.issue-card { border-top: 1px solid var(--ink); padding: 1.75rem 0 1.25rem; }
+.issue-card:first-of-type { border-top-width: 5px; }
+
+/* ── The submission window notice ─────────────────────────────────────── */
+
+.window {
+  border: 1px solid var(--ink);
+  border-left: 6px solid var(--blue);
+  padding: 1rem 1.25rem;
+  margin: 0 0 2.25rem;
+  background: var(--paper-2);
+}
+.window-state {
+  font-family: var(--type);
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin: 0 0 .3rem;
+}
+.window-sentence { margin: 0; font-size: 1.05rem; }
+.window-shut { border-left-color: var(--ink); }
+.window-shut .window-state { color: var(--ink-soft); }
+
+/* ── Forms ────────────────────────────────────────────────────────────── */
+
+form { margin: 0; }
+.field { margin: 0 0 1.5rem; }
+.field label {
+  display: block;
+  font-variant: small-caps;
+  letter-spacing: .12em;
+  font-size: .85rem;
+  margin-bottom: .35rem;
+}
+.hint { display: block; font-family: var(--type); font-size: .72rem; color: var(--ink-soft); margin-top: .35rem; }
+
+input[type="text"], input[type="email"], input[type="url"], input[type="password"],
+input[type="date"], input[type="number"], textarea, select {
+  width: 100%;
+  font-family: var(--type);
+  font-size: .9rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  padding: .55rem .65rem;
+}
+textarea { min-height: 7rem; line-height: 1.55; resize: vertical; }
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: inset 0 0 0 1px var(--blue);
+}
+
+.btn {
+  font-family: var(--body);
+  font-variant: small-caps;
+  letter-spacing: .14em;
+  font-size: .9rem;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  padding: .55rem 1.5rem;
+  cursor: pointer;
+}
+.btn:hover { background: var(--blue); border-color: var(--blue); }
+.btn-quiet { background: var(--paper); color: var(--ink); }
+.btn-quiet:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn-small { padding: .3rem .75rem; font-size: .8rem; letter-spacing: .1em; }
+
+.flash {
+  font-family: var(--type);
+  font-size: .8rem;
+  text-align: center;
+  padding: .55rem 1rem;
+  background: var(--blue);
+  color: var(--paper);
+}
+.flash-error { background: var(--ink); }
+
+.notice {
+  font-family: var(--type);
+  font-size: .82rem;
+  line-height: 1.6;
+  border: 1px solid var(--ink);
+  padding: .9rem 1rem;
+  margin: 0 0 1.75rem;
+}
+.notice-alarm { border-color: var(--blue); color: var(--blue); }
+
+/* ── The owner's desk: everything here is typed ───────────────────────── */
+
+.desk-nav {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  font-family: var(--type);
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: .6rem;
+  margin-bottom: 2rem;
+}
+.desk-nav a { color: var(--ink); text-decoration: none; }
+.desk-nav a:hover { color: var(--blue); }
+.desk-nav a.on { color: var(--blue); text-decoration: underline; }
+
+.ledger { width: 100%; border-collapse: collapse; font-family: var(--type); font-size: .8rem; }
+.ledger th {
+  text-align: left;
+  font-weight: 700;
+  font-size: .68rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  border-top: 3px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding: .5rem .6rem .5rem 0;
+  white-space: nowrap;
+}
+.ledger td { border-bottom: 1px solid var(--rule); padding: .7rem .6rem .7rem 0; vertical-align: top; }
+.ledger tr:hover td { background: var(--paper-2); }
+.ledger-name { font-family: var(--body); font-size: 1rem; }
+.ledger-link { display: inline-block; max-width: 20rem; overflow-wrap: anywhere; }
+.ledger select { width: auto; min-width: 8.5rem; font-size: .78rem; padding: .3rem .4rem; }
+.ledger input[type="text"] { font-size: .78rem; padding: .3rem .4rem; min-width: 10rem; }
+
+/* Statuses, stamped. */
+.stamp { font-family: var(--type); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.stamp::before { content: "[ "; }
+.stamp::after { content: " ]"; }
+.stamp-pending { color: var(--ink-soft); }
+.stamp-approved { color: var(--blue); font-weight: 700; }
+.stamp-rescinded { color: var(--ink); text-decoration: line-through; }
+.stamp-draft { color: var(--ink-soft); }
+.stamp-live { color: var(--blue); font-weight: 700; }
+
+.panel { border-top: 3px solid var(--ink); padding-top: 1rem; margin: 0 0 2.5rem; }
+.panel-head { font-family: var(--type); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 1rem; }
+.panel-note { font-family: var(--type); font-size: .75rem; color: var(--ink-soft); margin: -.6rem 0 1.25rem; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.5rem; }
+.row { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+.row select, .row input[type="text"] { width: auto; }
+.muted { color: var(--ink-soft); }
+.type { font-family: var(--type); font-size: .8rem; }
+.empty {
+  font-family: var(--type);
+  font-size: .85rem;
+  border: 1px dashed var(--rule-strong);
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────── */
+
+.footer {
+  border-top: 5px solid var(--ink);
+  max-width: var(--frame);
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 3rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1rem;
+  font-family: var(--type);
+  font-size: .72rem;
+  color: var(--ink-soft);
+}
+.footer p { margin: 0; }
+.footer-mark { flex: 1; }
+.footer-state { flex: 0 1 auto; text-align: center; color: var(--blue); text-transform: uppercase; letter-spacing: .1em; }
+
+/* The credit, last thing on the page, under a hairline. */
+.footer-credit {
+  flex-basis: 100%;
+  text-align: center;
+  margin-top: 1.5rem !important;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  font-size: .7rem;
+  letter-spacing: .08em;
+  color: var(--ink-soft);
+}
+
+/* The way in for owners. Quiet, and at the very end of the page. */
+.footer-admin {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 1rem;
+  white-space: nowrap;
+}
+.footer-admin a, .linkish {
+  font-family: var(--type);
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.footer-admin a:hover, .linkish:hover { color: var(--blue); border-bottom-color: var(--blue); }
+.linkish { background: none; border-width: 0 0 1px 0; border-style: solid; cursor: pointer; padding: 0; }
+
+@media (max-width: 46rem) {
+  #main { padding: 2rem 1rem 3rem; }
+  .masthead-inner, .rules, .bar, .footer { padding-left: 1rem; padding-right: 1rem; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .nav { gap: 1.5rem; }
+  .footer { flex-direction: column; align-items: center; text-align: center; gap: .85rem; }
+  .footer-mark, .footer-admin { flex: none; }
+  .footer-admin { justify-content: center; }
+  .ledger { font-size: .72rem; }
+  .ledger-link { max-width: 11rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
