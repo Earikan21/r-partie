@@ -28,7 +28,7 @@ function slugify(text, fallback = 'item') {
 /** Every render gets: the owner (or null), the site copy, and the window. */
 function loadContext(req, res, next) {
   res.locals.owner = req.session.ownerId
-    ? db.prepare('SELECT id, email, name FROM owners WHERE id = ?').get(req.session.ownerId)
+    ? db.prepare('SELECT id, email, name, must_change_password FROM owners WHERE id = ?').get(req.session.ownerId)
     : null;
   res.locals.settings = getSettings();
   res.locals.window = submissionWindow(res.locals.settings);

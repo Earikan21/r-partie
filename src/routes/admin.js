@@ -3,9 +3,22 @@ const { db, DEFAULT_SETTINGS } = require('../db');
 const { requireOwner, setSetting, slugify } = require('../middleware');
 const { today } = require('../window');
 const { createInvite, pendingInvites, inviteUrl, INVITE_DAYS } = require('../invites');
+const { addBlock, removeBlock, blocklist } = require('../blocklist');
 
 const router = express.Router();
 router.use(requireOwner);
+
+// Nobody reaches the desk on the standard credentials.
+router.use((req, res, next) => {
+  if (res.locals.owner.must_change_password) {
+    req.session.flash = {
+      type: 'error',
+      message: 'Set your own email and password before you start.',
+    };
+    return res.redirect('/account');
+  }
+  next();
+});
 
 const STATUSES = ['pending', 'approved', 'rescinded'];
 
@@ -47,6 +60,47 @@ router.post('/submissions/:id', (req, res) => {
 router.post('/submissions/:id/delete', (req, res) => {
   db.prepare('DELETE FROM submissions WHERE id = ?').run(req.params.id);
   req.session.flash = { type: 'ok', message: 'Submission deleted.' };
+  res.redirect('/admin');
+});
+
+// --- The blocklist -------------------------------------------------------
+
+router.get('/blocked', (req, res) => {
+  res.render('admin/blocked', { blocked: blocklist(), error: null });
+});
+
+router.post('/blocked', (req, res) => {
+  const result = addBlock(req.body.pattern, req.body.note, res.locals.owner.id);
+
+  if (result.error) {
+    return res.status(400).render('admin/blocked', { blocked: blocklist(), error: result.error });
+  }
+
+  req.session.flash = { type: 'ok', message: `${result.pattern} is blocked.` };
+  res.redirect('/admin/blocked');
+});
+
+router.post('/blocked/:id/delete', (req, res) => {
+  removeBlock(req.params.id);
+  req.session.flash = { type: 'ok', message: 'Unblocked.' };
+  res.redirect('/admin/blocked');
+});
+
+// Straight from the table: block the sender of this submission.
+router.post('/submissions/:id/block', (req, res) => {
+  const submission = db.prepare('SELECT * FROM submissions WHERE id = ?').get(req.params.id);
+  if (!submission) return res.sendStatus(404);
+
+  const target = req.body.scope === 'domain'
+    ? '@' + submission.email.split('@')[1]
+    : submission.email;
+
+  const result = addBlock(target, `Blocked from the table — ${submission.name}`, res.locals.owner.id);
+
+  req.session.flash = result.error
+    ? { type: 'error', message: result.error }
+    : { type: 'ok', message: `${result.pattern} is blocked. Nothing more arrives from there.` };
+
   res.redirect('/admin');
 });
 
@@ -237,9 +291,10 @@ const GROUPS = [
       'submissions_reply_by',
       'submissions_closed_notice',
       'submissions_thanks',
+      'submissions_blocked_notice',
     ],
   },
-  { label: 'Masthead', keys: ['site_title', 'site_tagline', 'footer_text'] },
+  { label: 'Masthead', keys: ['site_title', 'site_tagline', 'footer_text', 'footer_credit'] },
   { label: 'Navigation', keys: ['nav_issues', 'nav_about', 'nav_submit'] },
   { label: 'Home', keys: ['home_heading', 'home_standfirst'] },
   { label: 'Past & Present', keys: ['issues_heading', 'issues_intro'] },

@@ -31,15 +31,6 @@
         <a href="/about" <%= path === '/about' ? 'aria-current="page"' : '' %>><%= settings.nav_about %></a>
         <a href="/submit" <%= path === '/submit' ? 'aria-current="page"' : '' %>><%= settings.nav_submit %></a>
       </nav>
-
-      <nav class="nav nav-desk" aria-label="Owner">
-        <% if (owner) { %>
-          <a href="/admin">The desk</a>
-          <form method="post" action="/logout"><button type="submit" class="linkish">Sign out</button></form>
-        <% } else { %>
-          <a href="/login">Owner</a>
-        <% } %>
-      </nav>
     </div>
   </header>
 

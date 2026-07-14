@@ -15,8 +15,24 @@ cp .env.example .env      # then edit it
 npm run dev               # http://localhost:3000
 ```
 
-The first boot creates one owner account from `OWNER_EMAIL` / `OWNER_PASSWORD` and prints
-it to the console. Sign in at `/login`. Everything else is built from the site itself.
+The first boot creates one owner account and prints the credentials to the console.
+
+If `OWNER_EMAIL` and `OWNER_PASSWORD` are set, it uses those. If they are not, it falls back
+to the standard credentials, which are in this README and therefore known to everyone:
+
+```
+sweaty@boners.com
+Password1
+```
+
+Signing in with those gets you as far as `/account` and no further — the desk stays shut
+until you have replaced both the address and the password. After that, `/account` is where
+any owner changes their own password, any time.
+
+**The owner is seeded once**, on the boot where the database has no owner in it. Editing
+`.env` afterwards changes nothing, because the password is already hashed and stored. To
+start over, delete the database (`rm -rf data`) — which also throws away every submission,
+so do it before launch, not after.
 
 ```bash
 npm test                  # 10 unit checks on the date logic, 53 end-to-end
@@ -60,6 +76,35 @@ validated as a real `http(s)` URL before it is stored, so nothing hostile ends u
 status stamp, a status selector, and a notes field only the owner sees. Statuses are
 **pending**, **approved**, **rescinded**. An approved submission grows a "File in an issue"
 link, which carries the author and the URL into the piece form so nothing is retyped.
+
+### Checking the address
+
+Three checks, in order, before a submission is stored:
+
+1. **Syntax.** Free, and catches nothing but typing accidents.
+2. **The blocklist.** See below.
+3. **Whether the domain can take delivery.** A DNS lookup for the domain's mail servers.
+   This catches typos (`gmial.com`), invented domains, and domains that publish a *null MX*
+   record to say they accept no mail at all — `example.com` does exactly that.
+
+What none of this can tell you is whether the **mailbox** exists, or whether the person
+typing it owns it. Only a confirmation email proves that, and this site sends no email. So
+an address that passes is *deliverable*, not *verified*. Do not read more into it than that.
+
+The domain check **fails open**. If the resolver times out or has a bad day, the submission
+goes through. A false rejection loses a writer for good; a false acceptance costs one row in
+a table. Set `VALIDATE_MX=off` to skip the lookup entirely.
+
+### Blocking someone
+
+`/admin/blocked` takes either one address — `nuisance@example.com` — or a whole domain,
+written `@example.com`. Blocked senders are turned away at the form with a 403 and never
+reach the table. There is a **Block sender** button on every row of the submissions table,
+which is how you will actually use it.
+
+Be clear about what this is for. It stops **the person you do not want to hear from again**.
+It is not a defence against a script, which just uses another address — that is what rate
+limiting is for, and it is not built yet.
 
 **Nobody is emailed.** Not the writer, not the owner. Approving a submission changes a
 status in a table; writing to the author is still a human job. The site says so out loud,
@@ -126,15 +171,15 @@ touches the database is in `src/db.js` and the four route files, so the swap is 
 Named honestly, so nobody discovers them in production:
 
 - **Email.** Nothing is sent, to anyone, ever. See above.
-- **Password reset.** There is no "forgot password" flow, because it would need email. An
-  owner who forgets theirs has to be removed and invited again — which works, and takes
-  another owner thirty seconds, but is not what anyone expects.
-- **Changing your own password.** Same reason. Same workaround.
+- **Password reset.** Changing your password works, at `/account`. *Forgetting* it has no
+  cure, because a reset link would need email. Another owner removes you and invites you
+  again — thirty seconds, and it works, but it is not what anyone expects.
 - **CSRF tokens.** Sessions are `SameSite=Lax`, which stops the ordinary cross-site POST,
   but real tokens are the right answer before this takes anything valuable.
 - **Rate limiting.** The submission form is public and unauthenticated. One determined
   script could fill the table. Put Cloudflare or a rate limiter in front of `/submit`.
-- **Spam filtering.** No honeypot, no captcha. Watch the table for a week and see.
+- **Spam filtering.** No honeypot, no captcha. The blocklist handles a person, not a script.
+  Watch the table for a week and see.
 - **Reordering pieces by dragging.** There is a numeric "order" field instead.
 
 ---

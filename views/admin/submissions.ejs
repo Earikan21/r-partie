@@ -67,6 +67,12 @@
                 <a class="type" href="/admin/issues?from=<%= s.id %>">File in an issue →</a>
               </div>
             <% } %>
+            <div style="margin-top:.4rem">
+              <form method="post" action="/admin/submissions/<%= s.id %>/block"
+                    onsubmit="return confirm('Block <%= s.email %>? They will not be able to submit again.')">
+                <button class="linkish" type="submit" style="text-transform:none">Block sender</button>
+              </form>
+            </div>
           </td>
         </tr>
       <% }); %>

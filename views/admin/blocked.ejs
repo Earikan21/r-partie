@@ -1,0 +1,72 @@
+<%- include('../partials/head', { pageTitle: 'Blocked' }) %>
+
+<%- include('../partials/desk') %>
+
+<h1>Blocked</h1>
+<p class="type muted" style="margin-bottom:2rem">
+  Addresses and domains we will not take work from. A blocked sender is turned away at the
+  form and never reaches your table.
+</p>
+
+<section class="panel">
+  <p class="panel-head">Block an address or a domain</p>
+  <p class="panel-note">
+    One address — <strong>nuisance@example.com</strong> — or a whole domain, written
+    <strong>@example.com</strong>. A bare domain is read as the domain.
+  </p>
+
+  <% if (error) { %><p class="notice notice-alarm"><%= error %></p><% } %>
+
+  <form method="post" action="/admin/blocked">
+    <div class="grid-2">
+      <div class="field">
+        <label for="pattern">Address or domain</label>
+        <input type="text" id="pattern" name="pattern" placeholder="@example.com" required>
+      </div>
+      <div class="field">
+        <label for="note">Why</label>
+        <input type="text" id="note" name="note" placeholder="For your own memory. Optional.">
+      </div>
+    </div>
+    <button class="btn" type="submit">Block</button>
+  </form>
+</section>
+
+<% if (blocked.length) { %>
+  <table class="ledger">
+    <thead>
+      <tr><th>Pattern</th><th>What it catches</th><th>Why</th><th>Since</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% blocked.forEach(function (b) { %>
+        <tr>
+          <td class="ledger-name"><%= b.pattern %></td>
+          <td>
+            <% if (b.is_domain) { %>
+              <span class="stamp stamp-rescinded">whole domain</span>
+            <% } else { %>
+              <span class="stamp stamp-pending">one address</span>
+            <% } %>
+          </td>
+          <td><%= b.note || '—' %></td>
+          <td><%= b.created_at.slice(0, 10) %><%= b.blocked_by ? ' — ' + b.blocked_by : '' %></td>
+          <td>
+            <form method="post" action="/admin/blocked/<%= b.id %>/delete">
+              <button class="btn btn-quiet btn-small" type="submit">Unblock</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <p class="type muted" style="margin-top:1.5rem">
+    Blocking turns away the person you do not want to hear from again. It is not a defence
+    against a script, which simply uses another address — that is what rate limiting is for,
+    and it is not built yet.
+  </p>
+<% } else { %>
+  <p class="empty">Nobody is blocked.</p>
+<% } %>
+
+<%- include('../partials/foot') %>

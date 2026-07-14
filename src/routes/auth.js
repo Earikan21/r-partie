@@ -22,6 +22,15 @@ router.post('/login', (req, res) => {
   }
 
   req.session.ownerId = owner.id;
+
+  if (owner.must_change_password) {
+    req.session.flash = {
+      type: 'error',
+      message: 'These are the standard credentials. Replace them before you go any further.',
+    };
+    return res.redirect('/account');
+  }
+
   res.redirect(req.body.next || '/admin');
 });
 

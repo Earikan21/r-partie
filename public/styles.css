@@ -84,14 +84,12 @@ a:hover { color: var(--ink); }
   margin: 0 auto;
   padding: .7rem 1.5rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: baseline;
-  gap: 1rem;
-  flex-wrap: wrap;
   border-bottom: 1px solid var(--ink);
 }
-.nav { display: flex; gap: 1.5rem; align-items: baseline; flex-wrap: wrap; }
-.nav a, .linkish {
+.nav { display: flex; gap: 2.25rem; align-items: baseline; flex-wrap: wrap; justify-content: center; }
+.nav a {
   font-family: var(--body);
   font-variant: small-caps;
   letter-spacing: .12em;
@@ -103,10 +101,6 @@ a:hover { color: var(--ink); }
 }
 .nav a:hover { color: var(--blue); border-bottom-color: var(--blue); }
 .nav a[aria-current="page"] { border-bottom-color: var(--ink); }
-.nav-desk a, .linkish { color: var(--blue); }
-.nav-desk form { display: inline; }
-.linkish { background: none; border: 0; cursor: pointer; padding: 0; }
-.linkish:hover { color: var(--ink); }
 
 /* ── Frame ────────────────────────────────────────────────────────────── */
 
@@ -350,21 +344,58 @@ input:focus, textarea:focus, select:focus {
   margin: 0 auto;
   padding: 1.25rem 1.5rem 3rem;
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
   flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1rem;
   font-family: var(--type);
   font-size: .72rem;
   color: var(--ink-soft);
 }
 .footer p { margin: 0; }
-.footer-state { color: var(--blue); text-transform: uppercase; letter-spacing: .1em; }
+.footer-mark { flex: 1; }
+.footer-state { flex: 0 1 auto; text-align: center; color: var(--blue); text-transform: uppercase; letter-spacing: .1em; }
+
+/* The credit, last thing on the page, under a hairline. */
+.footer-credit {
+  flex-basis: 100%;
+  text-align: center;
+  margin-top: 1.5rem !important;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  font-size: .7rem;
+  letter-spacing: .08em;
+  color: var(--ink-soft);
+}
+
+/* The way in for owners. Quiet, and at the very end of the page. */
+.footer-admin {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 1rem;
+  white-space: nowrap;
+}
+.footer-admin a, .linkish {
+  font-family: var(--type);
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.footer-admin a:hover, .linkish:hover { color: var(--blue); border-bottom-color: var(--blue); }
+.linkish { background: none; border-width: 0 0 1px 0; border-style: solid; cursor: pointer; padding: 0; }
 
 @media (max-width: 46rem) {
   #main { padding: 2rem 1rem 3rem; }
   .masthead-inner, .rules, .bar, .footer { padding-left: 1rem; padding-right: 1rem; }
   .grid-2 { grid-template-columns: 1fr; }
-  .bar { justify-content: center; }
+  .nav { gap: 1.5rem; }
+  .footer { flex-direction: column; align-items: center; text-align: center; gap: .85rem; }
+  .footer-mark, .footer-admin { flex: none; }
+  .footer-admin { justify-content: center; }
   .ledger { font-size: .72rem; }
   .ledger-link { max-width: 11rem; }
 }

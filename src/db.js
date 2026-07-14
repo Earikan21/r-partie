@@ -17,6 +17,7 @@ db.exec(`
     email         TEXT NOT NULL UNIQUE,
     name          TEXT NOT NULL,
     password_hash TEXT NOT NULL,
+    must_change_password INTEGER NOT NULL DEFAULT 0,
     created_at    TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -76,9 +77,24 @@ db.exec(`
     updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
+  -- Addresses and domains we will not take work from.
+  CREATE TABLE IF NOT EXISTS blocked (
+    id         INTEGER PRIMARY KEY,
+    pattern    TEXT NOT NULL UNIQUE,   -- "someone@example.com" or "@example.com"
+    note       TEXT NOT NULL DEFAULT '',
+    created_by INTEGER REFERENCES owners(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
   CREATE INDEX IF NOT EXISTS idx_submissions_status ON submissions(status);
   CREATE INDEX IF NOT EXISTS idx_pieces_issue ON pieces(issue_id, position);
 `);
+
+// Older databases were made before the forced-setup flag existed.
+const ownerColumns = db.prepare('PRAGMA table_info(owners)').all().map((c) => c.name);
+if (!ownerColumns.includes('must_change_password')) {
+  db.exec('ALTER TABLE owners ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0');
+}
 
 // Everything the owner can rewrite from /admin. Add a key here and it appears
 // in the admin form automatically (see GROUPS in src/routes/admin.js).
@@ -107,6 +123,8 @@ const DEFAULT_SETTINGS = {
   submissions_closed_notice:
     'We are not reading right now. Dates for the next window will be posted here.',
   submissions_thanks: 'Got it. We read everything, and you will hear from us either way.',
+  submissions_blocked_notice:
+    'We are not able to accept a submission from this address.',
 
   // The submission window. Dates are YYYY-MM-DD.
   submissions_mode: 'scheduled', // scheduled | open | closed
@@ -115,6 +133,7 @@ const DEFAULT_SETTINGS = {
   submissions_reply_by: '',
 
   footer_text: '© Repartie',
+  footer_credit: 'Website built by Emmet',
 };
 
 const insertSetting = db.prepare(
@@ -122,19 +141,33 @@ const insertSetting = db.prepare(
 );
 for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) insertSetting.run(key, value);
 
-// First owner, from env, on first boot only.
+// The way in on a brand new database. If OWNER_EMAIL / OWNER_PASSWORD are set, they
+// win. If not, these are the standard credentials — and the account is flagged, so
+// whoever signs in with them is made to replace them before they can reach the desk.
+const STANDARD_EMAIL = 'sweaty@boners.com';
+const STANDARD_PASSWORD = 'Password1';
+
+// First owner, on first boot only.
 if (!db.prepare('SELECT id FROM owners LIMIT 1').get()) {
-  const email = (process.env.OWNER_EMAIL || 'owner@repartie.local').toLowerCase();
-  const password = process.env.OWNER_PASSWORD || 'changeme';
-  db.prepare('INSERT INTO owners (email, name, password_hash) VALUES (?, ?, ?)').run(
-    email,
-    process.env.OWNER_NAME || 'Owner',
-    bcrypt.hashSync(password, 10)
-  );
-  console.log(`Owner account created: ${email} / ${password}`);
-  if (password === 'changeme') {
-    console.warn('WARNING: default owner password in use. Set OWNER_PASSWORD.');
-  }
+  const chosen = Boolean(process.env.OWNER_EMAIL && process.env.OWNER_PASSWORD);
+  const email = (process.env.OWNER_EMAIL || STANDARD_EMAIL).toLowerCase();
+  const password = process.env.OWNER_PASSWORD || STANDARD_PASSWORD;
+
+  db.prepare(
+    'INSERT INTO owners (email, name, password_hash, must_change_password) VALUES (?, ?, ?, ?)'
+  ).run(email, process.env.OWNER_NAME || 'Owner', bcrypt.hashSync(password, 10), chosen ? 0 : 1);
+
+  console.log('');
+  console.log('  Owner account created. Sign in at /login with:');
+  console.log(`    ${email}`);
+  console.log(`    ${password}`);
+  if (!chosen) console.log('  You will be asked to replace both before you can reach the desk.');
+  console.log('');
+} else {
+  // Nothing is seeded into a database that already has an owner. Say who is in there,
+  // so a forgotten password does not look like a broken deploy.
+  const who = db.prepare('SELECT email FROM owners ORDER BY created_at').all().map((o) => o.email);
+  console.log(`Owners in this database: ${who.join(', ')}`);
 }
 
 module.exports = { db, DATA_DIR, DEFAULT_SETTINGS };

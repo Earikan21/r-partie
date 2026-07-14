@@ -1,7 +1,8 @@
   </main>
 
   <footer class="footer">
-    <p><%= settings.footer_text %></p>
+    <p class="footer-mark"><%= settings.footer_text %></p>
+
     <p class="footer-state">
       <% if (window.state === 'open') { %>
         Open for submissions<%= window.closesOn ? ' until ' + longDate(window.closesOn) : '' %>
@@ -11,6 +12,19 @@
         Submissions closed
       <% } %>
     </p>
+
+    <nav class="footer-admin" aria-label="Administrative">
+      <% if (owner) { %>
+        <a href="/admin">Administrative</a>
+        <form method="post" action="/logout"><button type="submit" class="linkish">Sign out</button></form>
+      <% } else { %>
+        <a href="/login">Administrative</a>
+      <% } %>
+    </nav>
+
+    <% if (settings.footer_credit) { %>
+      <p class="footer-credit"><%= settings.footer_credit %></p>
+    <% } %>
   </footer>
 </body>
 </html>
