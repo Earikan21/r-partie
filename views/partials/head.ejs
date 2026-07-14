@@ -28,8 +28,8 @@
     <div class="bar">
       <nav class="nav" aria-label="Main">
         <a href="/issues" <%= path.startsWith('/issues') ? 'aria-current="page"' : '' %>><%= settings.nav_issues %></a>
-        <a href="/about" <%= path === '/about' ? 'aria-current="page"' : '' %>><%= settings.nav_about %></a>
         <a href="/submit" <%= path === '/submit' ? 'aria-current="page"' : '' %>><%= settings.nav_submit %></a>
+        <a href="/about" <%= path === '/about' ? 'aria-current="page"' : '' %>><%= settings.nav_about %></a>
       </nav>
     </div>
   </header>

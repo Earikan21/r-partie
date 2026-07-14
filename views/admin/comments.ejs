@@ -1,0 +1,46 @@
+<%- include('../partials/head', { pageTitle: 'Replies' }) %>
+
+<%- include('../partials/desk') %>
+
+<h1>Replies</h1>
+<p class="type muted" style="margin-bottom:2rem">
+  Anyone can leave one, under any name. <strong>Hiding</strong> leaves a marker so the thread
+  still reads. <strong>Deleting</strong> takes every reply underneath it as well.
+</p>
+
+<% if (comments.length) { %>
+  <table class="ledger">
+    <thead>
+      <tr><th>Name</th><th>Reply</th><th>Issue</th><th>When</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% comments.forEach(function (c) { %>
+        <tr>
+          <td class="ledger-name"><%= c.author_name %></td>
+          <td style="max-width:26rem">
+            <%= c.body.length > 180 ? c.body.slice(0, 180) + '…' : c.body %>
+            <% if (c.is_hidden) { %> <span class="stamp stamp-rescinded">hidden</span><% } %>
+          </td>
+          <td><a href="/issues/<%= c.issue_slug %>#c<%= c.id %>">No. <%= c.issue_number %></a></td>
+          <td><%= c.created_at.slice(0, 10) %></td>
+          <td>
+            <form method="post" action="/admin/comments/<%= c.id %>/hide">
+              <input type="hidden" name="hide" value="<%= c.is_hidden ? 'no' : 'yes' %>">
+              <button class="btn btn-quiet btn-small" type="submit">
+                <%= c.is_hidden ? 'Show' : 'Hide' %>
+              </button>
+            </form>
+            <form method="post" action="/admin/comments/<%= c.id %>/delete" style="margin-top:.4rem"
+                  onsubmit="return confirm('Delete this reply and every reply under it?')">
+              <button class="btn btn-quiet btn-small" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } else { %>
+  <p class="empty">Nobody has replied to anything.</p>
+<% } %>
+
+<%- include('../partials/foot') %>

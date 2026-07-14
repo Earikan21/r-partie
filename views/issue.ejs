@@ -17,4 +17,28 @@
 
 <p style="margin-top:2.5rem"><a href="/issues">← All issues</a></p>
 
+<section id="replies" style="margin-top:3.5rem">
+  <h2><%= settings.comments_heading %> <span class="type muted">(<%= commentCount %>)</span></h2>
+
+  <% if (settings.comments_enabled === 'yes') { %>
+    <p class="type muted" style="margin-bottom:1.5rem"><%= settings.comments_intro %></p>
+    <div class="column">
+      <%- include('partials/reply-form', { issue: issue, parentId: null }) %>
+    </div>
+  <% } else { %>
+    <p class="notice"><%= settings.comments_closed_notice %></p>
+  <% } %>
+
+  <% if (comments.length) { %>
+    <ul class="replies replies-top">
+      <% comments.forEach(function (c) { %>
+        <%- include('partials/comment', {
+              comment: c, issue: issue, owner: owner,
+              canReply: settings.comments_enabled === 'yes', maxDepth: maxDepth
+            }) %>
+      <% }); %>
+    </ul>
+  <% } %>
+</section>
+
 <%- include('partials/foot') %>

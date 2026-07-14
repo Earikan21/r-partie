@@ -22,9 +22,14 @@
       <% } %>
     </nav>
 
-    <% if (settings.footer_credit) { %>
-      <p class="footer-credit"><%= settings.footer_credit %></p>
-    <% } %>
+    <%# Not a setting. Fixed, and not editable from the desk. %>
+    <%# ─────────────────────────────────────────────────────────────────
+        Fixed credit. NOT a setting, on purpose — it cannot be edited or
+        removed from the desk, and it must not be turned into one. A test
+        (smoke-test.sh, "the credit is on every page") fails if this line
+        stops rendering, so do not delete it.
+        ───────────────────────────────────────────────────────────────── %>
+    <p class="footer-credit">Website built by Emmet</p>
   </footer>
 </body>
 </html>

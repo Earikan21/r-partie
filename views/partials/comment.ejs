@@ -1,0 +1,51 @@
+<li class="reply" id="c<%= comment.id %>">
+  <div class="reply-head">
+    <span class="reply-name"><%= comment.author_name %></span>
+    <span class="reply-date"><%= comment.created_at.slice(0, 10) %></span>
+    <% if (comment.is_hidden && owner) { %>
+      <span class="stamp stamp-rescinded">hidden</span>
+    <% } %>
+  </div>
+
+  <% if (comment.is_hidden && !owner) { %>
+    <%# The reply goes; the thread underneath it survives. %>
+    <p class="reply-body muted">[ removed by the editors ]</p>
+  <% } else { %>
+    <div class="reply-body">
+      <% comment.body.split(/\n\s*\n/).forEach(function (p) { %>
+        <% if (p.trim()) { %><p><%= p.trim() %></p><% } %>
+      <% }); %>
+    </div>
+  <% } %>
+
+  <div class="reply-tools">
+    <% if (canReply && comment.depth < maxDepth) { %>
+      <details>
+        <summary>Reply</summary>
+        <%- include('reply-form', { issue: issue, parentId: comment.id }) %>
+      </details>
+    <% } %>
+
+    <% if (owner) { %>
+      <form method="post" action="/admin/comments/<%= comment.id %>/hide">
+        <input type="hidden" name="hide" value="<%= comment.is_hidden ? 'no' : 'yes' %>">
+        <button class="linkish" type="submit"><%= comment.is_hidden ? 'Show' : 'Hide' %></button>
+      </form>
+      <form method="post" action="/admin/comments/<%= comment.id %>/delete"
+            onsubmit="return confirm('Delete this reply and every reply under it?')">
+        <button class="linkish" type="submit">Delete</button>
+      </form>
+    <% } %>
+  </div>
+
+  <% if (comment.children.length) { %>
+    <ul class="replies">
+      <% comment.children.forEach(function (child) { %>
+        <%- include('comment', {
+              comment: child, issue: issue, owner: owner,
+              canReply: canReply, maxDepth: maxDepth
+            }) %>
+      <% }); %>
+    </ul>
+  <% } %>
+</li>

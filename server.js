@@ -37,6 +37,7 @@ app.use(loadContext);
 
 app.use(require('./src/routes/public'));
 app.use(require('./src/routes/submissions'));
+app.use(require('./src/routes/comments'));
 app.use(require('./src/routes/auth'));
 app.use(require('./src/routes/invite'));
 app.use(require('./src/routes/account'));

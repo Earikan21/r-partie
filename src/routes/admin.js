@@ -63,6 +63,34 @@ router.post('/submissions/:id/delete', (req, res) => {
   res.redirect('/admin');
 });
 
+// --- Replies -------------------------------------------------------------
+
+router.get('/comments', (req, res) => {
+  const comments = db
+    .prepare(
+      `SELECT c.*, i.number AS issue_number, i.slug AS issue_slug
+       FROM comments c
+       JOIN issues i ON i.id = c.issue_id
+       ORDER BY c.created_at DESC`
+    )
+    .all();
+  res.render('admin/comments', { comments });
+});
+
+router.post('/comments/:id/hide', (req, res) => {
+  const hide = req.body.hide === 'yes';
+  db.prepare('UPDATE comments SET is_hidden = ? WHERE id = ?').run(hide ? 1 : 0, req.params.id);
+  req.session.flash = { type: 'ok', message: hide ? 'Reply hidden.' : 'Reply restored.' };
+  res.redirect(req.get('referer') || '/admin/comments');
+});
+
+router.post('/comments/:id/delete', (req, res) => {
+  // The cascade takes every reply underneath it too.
+  db.prepare('DELETE FROM comments WHERE id = ?').run(req.params.id);
+  req.session.flash = { type: 'ok', message: 'Reply deleted, along with anything under it.' };
+  res.redirect(req.get('referer') || '/admin/comments');
+});
+
 // --- The blocklist -------------------------------------------------------
 
 router.get('/blocked', (req, res) => {
@@ -294,10 +322,15 @@ const GROUPS = [
       'submissions_blocked_notice',
     ],
   },
-  { label: 'Masthead', keys: ['site_title', 'site_tagline', 'footer_text', 'footer_credit'] },
+  { label: 'Masthead', keys: ['site_title', 'site_tagline', 'footer_text'] },
   { label: 'Navigation', keys: ['nav_issues', 'nav_about', 'nav_submit'] },
   { label: 'Home', keys: ['home_heading', 'home_standfirst'] },
   { label: 'Past & Present', keys: ['issues_heading', 'issues_intro'] },
+  {
+    label: 'Replies',
+    note: 'Comments under each issue. No account needed, so keep an eye on them.',
+    keys: ['comments_enabled', 'comments_heading', 'comments_intro', 'comments_closed_notice'],
+  },
   { label: 'About', keys: ['about_heading', 'about_body'] },
   { label: 'Submit', keys: ['submit_heading', 'submit_intro', 'submit_guidelines'] },
 ];
