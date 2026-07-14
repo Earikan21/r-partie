@@ -141,6 +141,31 @@ its own page; leave the body empty and the title links away.
 Issues are drafts until published. A draft is invisible to readers and 404s if guessed.
 Publishing puts it on the home page and in Past & Present; unpublishing takes it back.
 
+## Replies
+
+Every published issue has a comment thread under it. **No account.** You type a name with
+your reply, and that is all the name is — a label. A reply can hang off another reply, four
+tiers deep, after which the reply link disappears and the server refuses, because infinite
+nesting turns into one word per line on a phone.
+
+Moderation is at `/admin/comments`, and it is not optional:
+
+- **Hide** replaces the reply with `[ removed by the editors ]` and leaves the thread under
+  it standing, so a conversation still reads.
+- **Delete** takes the reply and every reply beneath it. The database cascade does that, not
+  a loop, and the confirm box says so.
+- `comments_enabled` turns the whole thing off, on the server and not just in the template.
+
+Two things follow from having no accounts, and both were chosen rather than overlooked:
+
+**Anyone can type any name.** Somebody can post as one of your writers, or as you. If that
+turns out to matter, the fix is to make claimed names require an account — but that is a
+different site than the one you asked for.
+
+**This is the most spammable surface here** — more than the submission form, which at least
+closes. There is a honeypot field, which stops the lazy scripts and nothing else. There is
+no rate limiting. If it gets found, put Cloudflare in front of `/issues/*/comments`.
+
 ## Site copy
 
 Every heading, label, tagline, and paragraph on the public site lives in the `settings`
@@ -149,6 +174,10 @@ table and is editable at `/admin/settings`. No code, no redeploy.
 To add another editable string: add the key to `DEFAULT_SETTINGS` in `src/db.js`, add it to
 a group in `GROUPS` in `src/routes/admin.js`, and use `settings.your_key` in a template.
 Three lines, and it appears in the admin form on its own.
+
+The credit line in the footer is the one exception. It is written into
+`views/partials/foot.ejs` and is deliberately not a setting, so it cannot be edited away
+from the desk.
 
 ---
 
@@ -178,8 +207,8 @@ Named honestly, so nobody discovers them in production:
   but real tokens are the right answer before this takes anything valuable.
 - **Rate limiting.** The submission form is public and unauthenticated. One determined
   script could fill the table. Put Cloudflare or a rate limiter in front of `/submit`.
-- **Spam filtering.** No honeypot, no captcha. The blocklist handles a person, not a script.
-  Watch the table for a week and see.
+- **Spam filtering.** The reply form has a honeypot; the submission form has nothing. The
+  blocklist handles a person, not a script. Watch both for a week and see.
 - **Reordering pieces by dragging.** There is a numeric "order" field instead.
 
 ---

@@ -1,5 +1,6 @@
 const express = require('express');
 const { db } = require('../db');
+const { commentTree, countComments, MAX_DEPTH } = require('../comments');
 
 const router = express.Router();
 
@@ -42,7 +43,13 @@ router.get('/issues/:slug', (req, res) => {
       message: 'That issue is not here. The archive has everything we have run.',
     });
   }
-  res.render('issue', { issue, pieces: piecesIn(issue.id) });
+  res.render('issue', {
+    issue,
+    pieces: piecesIn(issue.id),
+    comments: commentTree(issue.id),
+    commentCount: countComments(issue.id),
+    maxDepth: MAX_DEPTH,
+  });
 });
 
 // A piece hosted on the site rather than linked out.

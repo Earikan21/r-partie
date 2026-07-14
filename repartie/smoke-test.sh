@@ -198,6 +198,71 @@ curl -s -b $O -o /dev/null -X POST $B/admin/issues/1/publish -d "publish=no"
 hasnt "unpublishing hides it again" "The Water Issue" $B/issues
 curl -s -b $O -o /dev/null -X POST $B/admin/issues/1/publish -d "publish=yes"
 
+echo "== Replies =="
+I=$B/issues/no-1-the-water-issue
+has "the reply form is on the issue" 'name="author_name"' $I
+curl -s -o /dev/null -X POST $I/comments -d "author_name=Nan&body=The cormorant piece is the best thing here."
+has "a reply appears"         "The cormorant piece is the best thing here." $I
+has "under the name given"    "Nan"  $I
+has "a nameless reply is refused" "Put a name to it" \
+  -c /tmp/c.txt -b /tmp/c.txt -L -X POST $I/comments -d "author_name=&body=Nothing"
+has "an empty reply is refused" "The reply is empty" \
+  -c /tmp/c.txt -b /tmp/c.txt -L -X POST $I/comments -d "author_name=Nan&body="
+hasnt "the honeypot swallows a bot" "I am a robot" \
+  -X POST $I/comments -d "author_name=Bot&body=I am a robot&website=http://spam.example"
+
+echo "== Replies nest =="
+PARENT=$(node -e "
+  const db = require('better-sqlite3')('$DATA_DIR/repartie.db');
+  process.stdout.write(String(db.prepare('SELECT id FROM comments ORDER BY id LIMIT 1').get().id));
+")
+curl -s -o /dev/null -X POST $I/comments \
+  -d "parent_id=$PARENT&author_name=Iris&body=Kind of you to say so."
+has "a reply to a reply shows"  "Kind of you to say so." $I
+DEPTH=$(node -e "
+  const db = require('better-sqlite3')('$DATA_DIR/repartie.db');
+  process.stdout.write(String(db.prepare(\"SELECT depth FROM comments WHERE author_name='Iris'\").get().depth));
+")
+check "and it is one level deep" 1 "$DEPTH"
+
+# Walk a thread down to the floor, then try to go one deeper.
+LAST=$PARENT
+for LEVEL in 1 2 3 4; do
+  curl -s -o /dev/null -X POST $I/comments -d "parent_id=$LAST&author_name=D$LEVEL&body=Level $LEVEL"
+  LAST=$(node -e "
+    const db = require('better-sqlite3')('$DATA_DIR/repartie.db');
+    process.stdout.write(String(db.prepare(\"SELECT id FROM comments WHERE author_name='D$LEVEL'\").get().id));
+  ")
+done
+MAXED=$(node -e "
+  const db = require('better-sqlite3')('$DATA_DIR/repartie.db');
+  process.stdout.write(String(db.prepare(\"SELECT depth FROM comments WHERE author_name='D4'\").get().depth));
+")
+check "the thread bottoms out at depth 4" 4 "$MAXED"
+has "and refuses to go deeper" "as deep as it goes" \
+  -c /tmp/c.txt -b /tmp/c.txt -L -X POST $I/comments -d "parent_id=$LAST&author_name=D5&body=Too far"
+
+echo "== The owner moderates =="
+curl -s -b $O -o /dev/null -X POST $B/admin/comments/$PARENT/hide -d "hide=yes"
+hasnt "a hidden reply is gone for readers" "The cormorant piece is the best thing here." $I
+has "but leaves a marker"                  "removed by the editors" $I
+has "and its replies survive"              "Kind of you to say so." $I
+has "the owner still sees it"              "The cormorant piece is the best thing here." -b $O $I
+curl -s -b $O -o /dev/null -X POST $B/admin/comments/$PARENT/hide -d "hide=no"
+has "unhiding brings it back" "The cormorant piece is the best thing here." $I
+
+has "the desk lists every reply" "Kind of you to say so." -b $O $B/admin/comments
+curl -s -b $O -o /dev/null -X POST $B/admin/comments/$PARENT/delete
+hasnt "deleting takes the reply"        "The cormorant piece is the best thing here." $I
+hasnt "and everything under it"         "Kind of you to say so." $I
+
+echo "== Replies can be switched off =="
+curl -s -b $O -o /dev/null -X POST $B/admin/settings -d "comments_enabled=no"
+hasnt "the form is gone" 'name="author_name"' $I
+check "and a POST is refused" 403 \
+  "$(status -X POST $I/comments -d 'author_name=N&body=Sneaking in')"
+curl -s -b $O -o /dev/null -X POST $B/admin/settings -d "comments_enabled=yes"
+
 echo "== Owner edits the site =="
 curl -s -b $O -o /dev/null -X POST $B/admin/settings \
   -d "site_title=Repartie&site_tagline=Changed by the owner&nav_issues=The Archive&home_heading=Repartie"

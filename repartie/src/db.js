@@ -77,6 +77,22 @@ db.exec(`
     updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
+  -- Replies under an issue. No account: the name is typed in with the reply and is
+  -- nothing more than a label. A reply may hang off another reply, hence parent_id.
+  CREATE TABLE IF NOT EXISTS comments (
+    id          INTEGER PRIMARY KEY,
+    issue_id    INTEGER NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
+    parent_id   INTEGER REFERENCES comments(id) ON DELETE CASCADE,
+    author_name TEXT NOT NULL,
+    body        TEXT NOT NULL,
+    depth       INTEGER NOT NULL DEFAULT 0,
+    is_hidden   INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_comments_issue ON comments(issue_id, created_at);
+  CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id);
+
   -- Addresses and domains we will not take work from.
   CREATE TABLE IF NOT EXISTS blocked (
     id         INTEGER PRIMARY KEY,
@@ -132,8 +148,12 @@ const DEFAULT_SETTINGS = {
   submissions_closes_on: '',
   submissions_reply_by: '',
 
+  comments_enabled: 'yes',
+  comments_heading: 'Replies',
+  comments_intro: 'Put a name to it and say your piece. No account, no email.',
+  comments_closed_notice: 'Replies are closed.',
+
   footer_text: '© Repartie',
-  footer_credit: 'Website built by Emmet',
 };
 
 const insertSetting = db.prepare(

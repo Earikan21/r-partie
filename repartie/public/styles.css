@@ -403,3 +403,44 @@ input:focus, textarea:focus, select:focus {
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ── Replies ──────────────────────────────────────────────────────────── */
+
+.replies { list-style: none; margin: 2rem 0 0; padding: 0; }
+.replies-top > .reply:first-child { border-top: 1px solid var(--ink); }
+
+/* Each tier steps in, and the rule down the left is the thread itself. */
+.reply .replies {
+  margin: 1rem 0 0;
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--rule);
+}
+.reply { padding: 1.25rem 0; }
+.reply + .reply { border-top: 1px solid var(--rule); }
+
+.reply-head { display: flex; gap: .75rem; align-items: baseline; flex-wrap: wrap; }
+.reply-name {
+  font-family: var(--body);
+  font-variant: small-caps;
+  letter-spacing: .1em;
+  font-size: .95rem;
+  color: var(--ink);
+}
+.reply-date { font-family: var(--type); font-size: .68rem; color: var(--ink-soft); }
+.reply-body { margin-top: .4rem; max-width: var(--measure); }
+.reply-body p { margin: 0 0 .75rem; }
+
+.reply-tools { display: flex; gap: 1rem; align-items: baseline; margin-top: .35rem; }
+.reply-tools form { display: inline; }
+.reply-tools details { font-family: var(--type); font-size: .72rem; }
+.reply-tools summary {
+  cursor: pointer;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.reply-tools summary:hover { color: var(--ink); }
+.reply-form { margin: 1rem 0 .5rem; max-width: 32rem; }
+
+/* The honeypot. Off-screen rather than display:none — some scripts skip hidden fields. */
+.honey { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
