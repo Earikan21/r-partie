@@ -1,8 +1,8 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
 const { db, DEFAULT_SETTINGS } = require('../db');
 const { requireOwner, setSetting, slugify } = require('../middleware');
 const { today } = require('../window');
+const { createInvite, pendingInvites, inviteUrl, INVITE_DAYS } = require('../invites');
 
 const router = express.Router();
 router.use(requireOwner);
@@ -271,29 +271,43 @@ router.get('/people', (req, res) => {
   const owners = db
     .prepare('SELECT id, name, email, created_at FROM owners ORDER BY created_at')
     .all();
-  res.render('admin/people', { owners, error: null });
+  res.render('admin/people', {
+    owners,
+    invites: pendingInvites(),
+    inviteUrl: (token) => inviteUrl(req, token),
+    inviteDays: INVITE_DAYS,
+    error: null,
+  });
 });
 
-router.post('/people', (req, res) => {
-  const name = (req.body.name || '').trim();
+router.post('/people/invite', (req, res) => {
   const email = (req.body.email || '').trim().toLowerCase();
-  const password = req.body.password || '';
 
-  const owners = db.prepare('SELECT id, name, email, created_at FROM owners ORDER BY created_at').all();
-  const fail = (error) => res.status(400).render('admin/people', { owners, error });
+  const fail = (error) =>
+    res.status(400).render('admin/people', {
+      owners: db.prepare('SELECT id, name, email, created_at FROM owners ORDER BY created_at').all(),
+      invites: pendingInvites(),
+      inviteUrl: (token) => inviteUrl(req, token),
+      inviteDays: INVITE_DAYS,
+      error,
+    });
 
-  if (!name || !email) return fail('An owner needs a name and an email.');
-  if (password.length < 10) return fail('Give them a password of at least 10 characters.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('That is not an email address.');
   if (db.prepare('SELECT id FROM owners WHERE email = ?').get(email)) {
-    return fail('There is already an owner with that email.');
+    return fail('Somebody with that email is already an owner.');
   }
 
-  db.prepare('INSERT INTO owners (name, email, password_hash) VALUES (?, ?, ?)').run(
-    name,
-    email,
-    bcrypt.hashSync(password, 10)
-  );
-  req.session.flash = { type: 'ok', message: `${name} can now sign in. Send them the password.` };
+  const invite = createInvite(email, res.locals.owner.id);
+  req.session.flash = {
+    type: 'ok',
+    message: `Invitation ready for ${email}. Copy the link below and send it to them.`,
+  };
+  res.redirect('/admin/people#invite-' + invite.id);
+});
+
+router.post('/people/invite/:id/revoke', (req, res) => {
+  db.prepare('DELETE FROM invites WHERE id = ? AND accepted_at IS NULL').run(req.params.id);
+  req.session.flash = { type: 'ok', message: 'Invitation torn up. The link is dead.' };
   res.redirect('/admin/people');
 });
 

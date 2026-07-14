@@ -25,6 +25,19 @@ db.exec(`
     value TEXT NOT NULL
   );
 
+  -- An unused invite is a way in. It expires, it works once, and it can be torn up.
+  CREATE TABLE IF NOT EXISTS invites (
+    id          INTEGER PRIMARY KEY,
+    email       TEXT NOT NULL,
+    token       TEXT NOT NULL UNIQUE,
+    invited_by  INTEGER REFERENCES owners(id) ON DELETE SET NULL,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    expires_at  TEXT NOT NULL,
+    accepted_at TEXT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_invites_token ON invites(token);
+
   CREATE TABLE IF NOT EXISTS issues (
     id           INTEGER PRIMARY KEY,
     number       INTEGER NOT NULL,
