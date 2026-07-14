@@ -30,8 +30,23 @@ npm test                  # 10 unit checks on the date logic, 53 end-to-end
 and they can send in an essay when the window is open. That is the whole surface.
 
 **Owner.** One login, at `/login`, leading to `/admin`. Owners read submissions, set their
-status, build issues, publish them, rewrite every word on the public site, and add other
+status, build issues, publish them, rewrite every word on the public site, and invite other
 owners. There is no "editor" tier — an owner is an owner.
+
+### Inviting an owner
+
+At `/admin/people`, enter an email and you get a **link**. The site sends no mail, so you
+send it yourself — Slack, text, however you already talk to them. They open it, choose their
+own password, and land at the desk signed in.
+
+You never see their password, and they never have to be handed one. The link **works once**,
+**dies after 7 days**, and can be **torn up** before it is used. Inviting the same address
+twice replaces the old link rather than leaving two ways in.
+
+The tokens sit in the database in the clear, so that the link can be re-copied from the
+list later — there is no email to re-send it from. They are short-lived and single-use, but
+it does mean a database dump exposes any invitation still outstanding. Tear up the ones you
+are not waiting on.
 
 ---
 
@@ -111,8 +126,10 @@ touches the database is in `src/db.js` and the four route files, so the swap is 
 Named honestly, so nobody discovers them in production:
 
 - **Email.** Nothing is sent, to anyone, ever. See above.
-- **Password reset.** An owner sets another owner's first password and sends it to them.
-  Forgetting it means editing the database.
+- **Password reset.** There is no "forgot password" flow, because it would need email. An
+  owner who forgets theirs has to be removed and invited again — which works, and takes
+  another owner thirty seconds, but is not what anyone expects.
+- **Changing your own password.** Same reason. Same workaround.
 - **CSRF tokens.** Sessions are `SameSite=Lax`, which stops the ordinary cross-site POST,
   but real tokens are the right answer before this takes anything valuable.
 - **Rate limiting.** The submission form is public and unauthenticated. One determined

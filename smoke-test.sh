@@ -147,14 +147,66 @@ curl -s -b $O -o /dev/null -X POST $B/admin/settings \
 has "the tagline changed"   "Changed by the owner" $B/
 has "the nav label changed" "The Archive"          $B/
 
-echo "== Owners =="
-curl -s -b $O -o /dev/null -X POST $B/admin/people \
-  -d "name=Second Owner&email=two@test.com&password=alongenoughpassword"
-has "the new owner is listed" "two@test.com" -b $O $B/admin/people
+echo "== Inviting an owner =="
+curl -s -b $O -o /dev/null -X POST $B/admin/people/invite -d "email=two@test.com"
+has "the invitation is listed" "two@test.com" -b $O $B/admin/people
+has "there is a link to send" "/invite/" -b $O $B/admin/people
+
+curl -s -b $O -o /tmp/people.html $B/admin/people
+TOKEN=$(grep -o 'invite/[A-Za-z0-9_-]\{30,\}' /tmp/people.html | head -1 | cut -d/ -f2)
+check "the invite link opens"        200 "$(status $B/invite/$TOKEN)"
+has  "it names the invited address"  "two@test.com" $B/invite/$TOKEN
+check "a made-up token is refused"   410 "$(status $B/invite/notarealtoken)"
+check "inviting an existing owner is refused" 400 \
+  "$(status -b $O -X POST $B/admin/people/invite -d 'email=owner@repartie.test')"
+
+has "mismatched passwords are refused" "do not match" \
+  -X POST $B/invite/$TOKEN -d "name=Second Owner&password=alongenoughpassword&confirm=somethingelse00"
+has "a short password is refused" "at least 10 characters" \
+  -X POST $B/invite/$TOKEN -d "name=Second Owner&password=short&confirm=short"
+
+check "accepting signs them straight in" 302 \
+  "$(status -X POST $B/invite/$TOKEN -d 'name=Second Owner&password=alongenoughpassword&confirm=alongenoughpassword')"
+has "the new owner is on the masthead" "Second Owner" -b $O $B/admin/people
 check "the new owner can sign in" 302 \
   "$(status -X POST $B/login -d 'email=two@test.com&password=alongenoughpassword')"
-has "a short password is refused" "at least 10 characters" \
-  -b $O -X POST $B/admin/people -d "name=Third&email=three@test.com&password=short"
+check "the link cannot be used twice" 410 "$(status $B/invite/$TOKEN)"
+hasnt "a spent invitation leaves the list" "Tear it up" -b $O $B/admin/people
+
+echo "== Invitations expire and can be torn up =="
+curl -s -b $O -o /dev/null -X POST $B/admin/people/invite -d "email=three@test.com"
+curl -s -b $O -o /tmp/people.html $B/admin/people
+TOKEN3=$(grep -o 'invite/[A-Za-z0-9_-]\{30,\}' /tmp/people.html | head -1 | cut -d/ -f2)
+check "a fresh link works" 200 "$(status $B/invite/$TOKEN3)"
+
+node -e "
+  const db = require('better-sqlite3')('$DATA_DIR/repartie.db');
+  db.prepare(\"UPDATE invites SET expires_at = '2020-01-01 00:00:00' WHERE token = ?\").run('$TOKEN3');
+"
+check "an expired link is refused"       410 "$(status $B/invite/$TOKEN3)"
+check "an expired link cannot be posted" 410 \
+  "$(status -X POST $B/invite/$TOKEN3 -d 'name=Third&password=alongenoughpassword&confirm=alongenoughpassword')"
+has  "the desk shows it as expired"      "expired" -b $O $B/admin/people
+
+curl -s -b $O -o /dev/null -X POST $B/admin/people/invite -d "email=four@test.com"
+curl -s -b $O -o /tmp/people.html $B/admin/people
+TOKEN4=$(grep -o 'invite/[A-Za-z0-9_-]\{30,\}' /tmp/people.html | head -1 | cut -d/ -f2)
+INVITE_ID=$(node -e "
+  const db = require('better-sqlite3')('$DATA_DIR/repartie.db');
+  process.stdout.write(String(db.prepare('SELECT id FROM invites WHERE token = ?').get('$TOKEN4').id));
+")
+curl -s -b $O -o /dev/null -X POST $B/admin/people/invite/$INVITE_ID/revoke
+check "a torn-up link is dead" 410 "$(status $B/invite/$TOKEN4)"
+
+echo "== Removing an owner =="
+SECOND_ID=$(node -e "
+  const db = require('better-sqlite3')('$DATA_DIR/repartie.db');
+  process.stdout.write(String(db.prepare(\"SELECT id FROM owners WHERE email = 'two@test.com'\").get().id));
+")
+curl -s -b $O -o /dev/null -X POST $B/admin/people/$SECOND_ID/delete
+hasnt "the removed owner is gone" "two@test.com" -b $O $B/admin/people
+check "and can no longer sign in" 401 \
+  "$(status -X POST $B/login -d 'email=two@test.com&password=alongenoughpassword')"
 
 echo
 echo "$PASS passed, $FAIL failed"

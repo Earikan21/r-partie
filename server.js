@@ -38,6 +38,7 @@ app.use(loadContext);
 app.use(require('./src/routes/public'));
 app.use(require('./src/routes/submissions'));
 app.use(require('./src/routes/auth'));
+app.use(require('./src/routes/invite'));
 app.use('/admin', require('./src/routes/admin'));
 
 app.use((req, res) => {
