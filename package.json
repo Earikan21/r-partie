@@ -1,0 +1,25 @@
+{
+  "name": "repartie",
+  "version": "0.1.0",
+  "description": "Repartie \u2014 a newsletter of essays, with a submissions desk",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test/window.test.js && ./smoke-test.sh"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.11.1",
+    "better-sqlite3-session-store": "^0.1.0",
+    "dotenv": "^17.4.2",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true
+}

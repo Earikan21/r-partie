@@ -1,0 +1,87 @@
+<%- include('../partials/head', { pageTitle: 'Submissions' }) %>
+
+<%- include('../partials/desk') %>
+
+<h1>Submissions</h1>
+<p class="type muted" style="margin-bottom:2rem">
+  <%= total %> in all — <%= counts.pending %> pending, <%= counts.approved %> approved,
+  <%= counts.rescinded %> rescinded. The window is
+  <strong><%= window.state %></strong><%= window.closesOn && window.state === 'open' ? ', closing ' + longDate(window.closesOn) : '' %>.
+</p>
+
+<nav class="desk-nav" aria-label="Filter by status">
+  <a href="/admin" class="<%= filter ? '' : 'on' %>">All (<%= total %>)</a>
+  <% statuses.forEach(function (s) { %>
+    <a href="/admin?status=<%= s %>" class="<%= filter === s ? 'on' : '' %>"><%= s %> (<%= counts[s] %>)</a>
+  <% }); %>
+</nav>
+
+<% if (submissions.length) { %>
+
+  <%# One form per row, sitting outside the table and referenced by id, so the
+      cells stay clean and each row saves on its own. %>
+  <% submissions.forEach(function (s) { %>
+    <form id="sub-<%= s.id %>" method="post" action="/admin/submissions/<%= s.id %>"></form>
+  <% }); %>
+
+  <table class="ledger">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Essay</th>
+        <th>Received</th>
+        <th>Status</th>
+        <th>Notes</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% submissions.forEach(function (s) { %>
+        <tr>
+          <td class="ledger-name"><%= s.name %></td>
+          <td><a href="mailto:<%= s.email %>"><%= s.email %></a></td>
+          <td>
+            <a class="ledger-link" href="<%= s.essay_url %>" rel="noopener noreferrer" target="_blank"><%= s.essay_url %></a>
+          </td>
+          <td><%= s.created_at.slice(0, 10) %></td>
+          <td>
+            <div style="margin-bottom:.35rem">
+              <span class="stamp stamp-<%= s.status %>"><%= s.status %></span>
+            </div>
+            <select name="status" form="sub-<%= s.id %>" aria-label="Status of <%= s.name %>'s submission">
+              <% ['pending', 'approved', 'rescinded'].forEach(function (option) { %>
+                <option value="<%= option %>" <%= s.status === option ? 'selected' : '' %>><%= option %></option>
+              <% }); %>
+            </select>
+          </td>
+          <td>
+            <input type="text" name="owner_notes" form="sub-<%= s.id %>"
+                   value="<%= s.owner_notes %>" placeholder="—"
+                   aria-label="Notes on <%= s.name %>'s submission">
+          </td>
+          <td>
+            <button class="btn btn-small" type="submit" form="sub-<%= s.id %>">Save</button>
+            <% if (s.status === 'approved') { %>
+              <div style="margin-top:.4rem">
+                <a class="type" href="/admin/issues?from=<%= s.id %>">File in an issue →</a>
+              </div>
+            <% } %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <p class="type muted" style="margin-top:1.5rem">
+    Nobody is emailed automatically. Approving or rescinding changes the status here;
+    writing to the author is still your job.
+  </p>
+
+<% } else { %>
+  <p class="empty">
+    <% if (filter) { %>Nothing <%= filter %>.<% } else { %>No submissions yet.<% } %>
+  </p>
+<% } %>
+
+<%- include('../partials/foot') %>

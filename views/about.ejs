@@ -1,0 +1,12 @@
+<%- include('partials/head', { pageTitle: settings.about_heading }) %>
+
+<div class="column">
+  <h1><%= settings.about_heading %></h1>
+  <div class="prose">
+    <% settings.about_body.split(/\n\s*\n/).forEach(function (p) { %>
+      <% if (p.trim()) { %><p><%= p.trim() %></p><% } %>
+    <% }); %>
+  </div>
+</div>
+
+<%- include('partials/foot') %>

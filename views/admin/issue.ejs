@@ -1,0 +1,143 @@
+<%- include('../partials/head', { pageTitle: 'No. ' + issue.number }) %>
+
+<%- include('../partials/desk') %>
+
+<h1>No. <%= issue.number %> — <%= issue.title %></h1>
+<p class="type muted" style="margin-bottom:2rem">
+  <% if (issue.is_published) { %>
+    <span class="stamp stamp-live">live</span> Readers can see this.
+    <a href="/issues/<%= issue.slug %>">View it ↗</a>
+  <% } else { %>
+    <span class="stamp stamp-draft">draft</span> Nobody but you can see this yet.
+  <% } %>
+</p>
+
+<% if (from) { %>
+  <p class="notice notice-alarm">
+    Filing <strong><%= from.name %></strong>'s essay. The form below is filled in — add a title and save.
+  </p>
+<% } %>
+
+<section class="panel">
+  <p class="panel-head">Add a piece</p>
+  <form method="post" action="/admin/issues/<%= issue.id %>/pieces">
+    <div class="grid-2">
+      <div class="field">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" required autofocus>
+      </div>
+      <div class="field">
+        <label for="author">Author</label>
+        <input type="text" id="author" name="author" value="<%= from ? from.name : '' %>" required>
+      </div>
+    </div>
+    <div class="field">
+      <label for="url">Link to the essay</label>
+      <input type="url" id="url" name="url" placeholder="https://" value="<%= from ? from.essay_url : '' %>">
+      <span class="hint">Where the essay lives. Readers click the title and go there.</span>
+    </div>
+    <div class="field">
+      <label for="blurb">Blurb</label>
+      <input type="text" id="blurb" name="blurb">
+      <span class="hint">One line under the title in the contents. Optional.</span>
+    </div>
+    <div class="field">
+      <label for="body">Or paste the text</label>
+      <textarea id="body" name="body"></textarea>
+      <span class="hint">If you fill this in, the essay is hosted here instead of linked out, and the text wins over the link.</span>
+    </div>
+    <button class="btn" type="submit">Add piece</button>
+  </form>
+</section>
+
+<section class="panel">
+  <p class="panel-head">In this issue (<%= pieces.length %>)</p>
+
+  <% if (pieces.length) { %>
+    <% pieces.forEach(function (piece) { %>
+      <form method="post" action="/admin/pieces/<%= piece.id %>" style="margin-bottom:2rem">
+        <div class="grid-2">
+          <div class="field">
+            <label>Title</label>
+            <input type="text" name="title" value="<%= piece.title %>" required>
+          </div>
+          <div class="field">
+            <label>Author</label>
+            <input type="text" name="author" value="<%= piece.author %>" required>
+          </div>
+        </div>
+        <div class="field">
+          <label>Link</label>
+          <input type="url" name="url" value="<%= piece.url %>">
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Blurb</label>
+            <input type="text" name="blurb" value="<%= piece.blurb %>">
+          </div>
+          <div class="field">
+            <label>Order</label>
+            <input type="number" name="position" value="<%= piece.position %>" min="0">
+          </div>
+        </div>
+        <div class="field">
+          <label>Text, if hosted here</label>
+          <textarea name="body"><%= piece.body %></textarea>
+        </div>
+        <div class="row">
+          <button class="btn btn-small" type="submit">Save piece</button>
+          <button class="btn btn-quiet btn-small" type="submit"
+                  formaction="/admin/pieces/<%= piece.id %>/delete"
+                  formnovalidate
+                  onclick="return confirm('Remove &quot;<%= piece.title %>&quot; from this issue?')">Remove</button>
+        </div>
+      </form>
+    <% }); %>
+  <% } else { %>
+    <p class="empty">Nothing in this issue yet.</p>
+  <% } %>
+</section>
+
+<section class="panel">
+  <p class="panel-head">The issue itself</p>
+  <form method="post" action="/admin/issues/<%= issue.id %>">
+    <div class="grid-2">
+      <div class="field">
+        <label for="issue-title">Title</label>
+        <input type="text" id="issue-title" name="title" value="<%= issue.title %>" required>
+      </div>
+      <div class="field">
+        <label for="issue-dateline">Dateline</label>
+        <input type="text" id="issue-dateline" name="dateline" value="<%= issue.dateline %>">
+      </div>
+    </div>
+    <div class="field">
+      <label for="issue-intro">Introduction</label>
+      <textarea id="issue-intro" name="intro"><%= issue.intro %></textarea>
+      <span class="hint">Sits above the contents. Blank lines become paragraphs.</span>
+    </div>
+    <button class="btn" type="submit">Save issue</button>
+  </form>
+</section>
+
+<section class="panel">
+  <p class="panel-head"><%= issue.is_published ? 'Take it down' : 'Publish' %></p>
+  <p class="panel-note">
+    <%= issue.is_published
+        ? 'Removes the issue from the site. The pieces stay here.'
+        : 'Puts the issue on the site, in Past & Present and on the home page.' %>
+  </p>
+  <form method="post" action="/admin/issues/<%= issue.id %>/publish">
+    <input type="hidden" name="publish" value="<%= issue.is_published ? 'no' : 'yes' %>">
+    <button class="btn <%= issue.is_published ? 'btn-quiet' : '' %>" type="submit">
+      <%= issue.is_published ? 'Unpublish' : 'Publish issue' %>
+    </button>
+  </form>
+
+  <form method="post" action="/admin/issues/<%= issue.id %>/delete" style="margin-top:1.25rem"
+        onsubmit="return confirm('Delete No. <%= issue.number %> and everything in it?')">
+    <button class="btn btn-quiet btn-small" type="submit">Delete the whole issue</button>
+  </form>
+</section>
+
+<%- include('../partials/foot') %>

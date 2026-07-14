@@ -1,0 +1,17 @@
+<%- include('partials/head', { pageTitle: piece.title }) %>
+
+<article class="column">
+  <p class="eyebrow">No. <%= issue.number %> — <%= issue.title %></p>
+  <h1><%= piece.title %></h1>
+  <p class="standfirst">by <%= piece.author %><% if (piece.blurb) { %> — <%= piece.blurb %><% } %></p>
+
+  <div class="prose">
+    <% piece.body.split(/\n\s*\n/).forEach(function (p) { %>
+      <% if (p.trim()) { %><p><%= p.trim() %></p><% } %>
+    <% }); %>
+  </div>
+
+  <p style="margin-top:2.5rem"><a href="/issues/<%= issue.slug %>">← Back to No. <%= issue.number %></a></p>
+</article>
+
+<%- include('partials/foot') %>

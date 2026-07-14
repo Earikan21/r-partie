@@ -1,0 +1,63 @@
+<%- include('../partials/head', { pageTitle: 'Owners' }) %>
+
+<%- include('../partials/desk') %>
+
+<h1>Owners</h1>
+<p class="type muted" style="margin-bottom:2rem">
+  Everyone here can read submissions, set their status, build issues, and change the site.
+  Readers never sign in, so there is nobody else to manage.
+</p>
+
+<table class="ledger">
+  <thead><tr><th>Name</th><th>Email</th><th>Since</th><th></th></tr></thead>
+  <tbody>
+    <% owners.forEach(function (o) { %>
+      <tr>
+        <td class="ledger-name"><%= o.name %><%= o.id === owner.id ? ' (you)' : '' %></td>
+        <td><%= o.email %></td>
+        <td><%= o.created_at.slice(0, 10) %></td>
+        <td>
+          <% if (o.id !== owner.id && owners.length > 1) { %>
+            <form method="post" action="/admin/people/<%= o.id %>/delete"
+                  onsubmit="return confirm('Remove <%= o.name %>?')">
+              <button class="btn btn-quiet btn-small" type="submit">Remove</button>
+            </form>
+          <% } else { %>
+            <span class="muted">—</span>
+          <% } %>
+        </td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<section class="panel" style="margin-top:2.5rem">
+  <p class="panel-head">Add an owner</p>
+  <p class="panel-note">
+    You set their first password and send it to them. There is no password reset yet,
+    so pick something long and tell them to change it — by asking you.
+  </p>
+
+  <% if (error) { %><p class="notice notice-alarm"><%= error %></p><% } %>
+
+  <form method="post" action="/admin/people">
+    <div class="grid-2">
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+    </div>
+    <div class="field">
+      <label for="password">First password</label>
+      <input type="text" id="password" name="password" minlength="10" required>
+      <span class="hint">At least 10 characters. Shown in the clear so you can copy it once and send it.</span>
+    </div>
+    <button class="btn" type="submit">Add owner</button>
+  </form>
+</section>
+
+<%- include('../partials/foot') %>

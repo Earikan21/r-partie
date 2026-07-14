@@ -1,0 +1,20 @@
+<%- include('partials/head', { pageTitle: 'No. ' + issue.number + ' — ' + issue.title }) %>
+
+<div class="issue-head">
+  <p class="issue-number">No. <%= issue.number %></p>
+  <% if (issue.dateline) { %><p class="issue-dateline"><%= issue.dateline %></p><% } %>
+  <h1 class="issue-title"><%= issue.title %></h1>
+  <% if (issue.intro) { %>
+    <div class="prose column">
+      <% issue.intro.split(/\n\s*\n/).forEach(function (p) { %>
+        <% if (p.trim()) { %><p><%= p.trim() %></p><% } %>
+      <% }); %>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/toc', { issue: issue, pieces: pieces }) %>
+
+<p style="margin-top:2.5rem"><a href="/issues">← All issues</a></p>
+
+<%- include('partials/foot') %>

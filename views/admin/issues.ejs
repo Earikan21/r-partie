@@ -1,0 +1,66 @@
+<%- include('../partials/head', { pageTitle: 'Issues' }) %>
+
+<%- include('../partials/desk') %>
+
+<h1>Issues</h1>
+
+<% if (from) { %>
+  <p class="notice notice-alarm">
+    Filing <strong><%= from.name %></strong>'s essay. Choose the issue it belongs in, or start a new one.
+  </p>
+<% } %>
+
+<section class="panel">
+  <p class="panel-head">Start an issue</p>
+  <form method="post" action="/admin/issues">
+    <div class="grid-2">
+      <div class="field">
+        <label for="number">Number</label>
+        <input type="number" id="number" name="number" value="<%= nextNumber %>" min="1" required>
+      </div>
+      <div class="field">
+        <label for="dateline">Dateline</label>
+        <input type="text" id="dateline" name="dateline" placeholder="Spring 2026">
+      </div>
+    </div>
+    <div class="field">
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" placeholder="The Water Issue" required>
+    </div>
+    <button class="btn" type="submit">Create issue</button>
+  </form>
+</section>
+
+<% if (issues.length) { %>
+  <table class="ledger">
+    <thead>
+      <tr><th>No.</th><th>Title</th><th>Dateline</th><th>Pieces</th><th>State</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% issues.forEach(function (issue) { %>
+        <tr>
+          <td><%= issue.number %></td>
+          <td class="ledger-name"><%= issue.title %></td>
+          <td><%= issue.dateline || '—' %></td>
+          <td><%= issue.piece_count %></td>
+          <td>
+            <% if (issue.is_published) { %>
+              <span class="stamp stamp-live">live</span>
+            <% } else { %>
+              <span class="stamp stamp-draft">draft</span>
+            <% } %>
+          </td>
+          <td>
+            <a href="/admin/issues/<%= issue.id %><%= from ? '?from=' + from.id : '' %>">
+              <%= from ? 'File it here →' : 'Edit' %>
+            </a>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } else { %>
+  <p class="empty">No issues yet. Start one above.</p>
+<% } %>
+
+<%- include('../partials/foot') %>

@@ -1,0 +1,16 @@
+  </main>
+
+  <footer class="footer">
+    <p><%= settings.footer_text %></p>
+    <p class="footer-state">
+      <% if (window.state === 'open') { %>
+        Open for submissions<%= window.closesOn ? ' until ' + longDate(window.closesOn) : '' %>
+      <% } else if (window.state === 'upcoming') { %>
+        Reading opens <%= longDate(window.opensOn) %>
+      <% } else { %>
+        Submissions closed
+      <% } %>
+    </p>
+  </footer>
+</body>
+</html>
